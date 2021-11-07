@@ -1,5 +1,5 @@
-package Client;
 
+import java.rmi.*;
 import java.io.*;
 import java.net.Socket;
 import java.util.Scanner;
@@ -11,12 +11,16 @@ public class Student {
     final static String[] PASSWORDS = { "owais", "student"};
 
     public static void main(String argv[]) {
-        if (argv.length != 2) {
-            System.out.println("Usage: java Client.Student username password");
+        if (argv.length != 0) {
+            System.out.println("Usage: java Client.Student");
             System.exit(0);
         }
-        String username = argv[0];
-        String password = argv[1];
+        // create scanner
+        Scanner sc = new Scanner(System.in);
+        System.out.print("Username: ");
+        String username = sc.nextLine();
+        System.out.print("\nPassword: ");
+        String password = sc.nextLine();
         boolean login = false;
         for (int i = 0; i < USERS.length; i++) {
             if (username.equalsIgnoreCase(USERS[i])) {
@@ -36,7 +40,11 @@ public class Student {
         // create in/out strm
         BufferedReader in = null;
         PrintWriter out = null;
+        String machineName="127.0.0.1";
         try {
+            String name="//"+machineName+"Supervisor";
+            //configure RMI
+            ClassInterface ci= (ClassInterface)Naming.lookup(name);
             // open socket
             clientSocket = new Socket("localhost", PORT_NUMBER);// name/ip address, port number
             // init input
@@ -48,8 +56,7 @@ public class Student {
             System.exit(0);
         }
         // clientSocket, input, output ready
-        // create scanner
-        Scanner sc = new Scanner(System.in);
+        
         String line = null;
 
         try {
@@ -57,8 +64,15 @@ public class Student {
             //tell server who this is
             out.println(username);
             out.flush();
+            System.out.print("Test Name: ");
+            
             String testName = in.readLine();
+            if (!sc.nextLine().equals(testName)){
+                System.out.println("Sorry, that test is unavailable");
+                System.exit(0);
+            }
             System.out.println("\n" + testName + "\n");
+            //take test
             while (true) {
                 line = in.readLine();
                 if ("iosuhefiuherfiushzfgiu".equals(line)) {
@@ -82,7 +96,6 @@ public class Student {
                 e.printStackTrace();
             }
         }
-        // check if UN/PW align
         // close scanner
         sc.close();
         // close sockets

@@ -178,6 +178,7 @@ public class Supervisor {
             }
             prevFile = currFile;
         }
+        //change the program so that any test can be taken at any time if within time/day specified
         System.out.println("Please enter the name of the test that you would like to use:\n" + list);
         loadTest("Content/" + sc.nextLine() + ".txt");
         System.out.println("Test Loaded : " + currentTest);
