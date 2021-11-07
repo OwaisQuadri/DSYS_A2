@@ -2,23 +2,134 @@ package Server;
 
 import java.io.*;
 import java.net.Socket;
+import java.rmi.RemoteException;
+import java.rmi.server.UnicastRemoteObject;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.Scanner;
 
-public class ClientHandler implements Runnable {// for multithreading client requests
-    private final Socket client;
+public class ClientHandler extends UnicastRemoteObject implements ClassInterface {// for multithreading client requests
+    private String name;
+    private Socket client;
     private ArrayList<ArrayList<String>> questions;
-    private final String test;
     private String studentName;
+    static String test = "";
+    static String pw, startDT, endDT;
+    static int numOfTakes;
+    static ArrayList<ArrayList<String>> currQuestions = new ArrayList<>();
+    boolean startTest = false;
+    Scanner student = new Scanner(System.in);
 
     // Constructor
-    public ClientHandler(Socket socket, String test, ArrayList<ArrayList<String>> questions) {
-        this.client = socket;
-        this.test = test;
-        this.questions = questions;
+    public ClientHandler(String s) throws RemoteException {
+        super();
+        name = s;
     }
 
-    @Override
+    private static boolean loadTest(String name) {
+        // re-init loaded questions
+        currQuestions = new ArrayList<>();
+        String path = "Content/" + name + ".txt";
+        try {
+            File file = new File(path);
+            Scanner r = new Scanner(file);
+            test = file.getName().substring(0, file.getName().length() - 4);
+            // password
+            pw = r.nextLine();
+            // number of takes
+            String tempString;
+            if ((tempString = r.nextLine()).equals("")) {
+                numOfTakes = -1;
+            } else {
+                numOfTakes = Integer.parseInt(r.nextLine());
+            }
+
+            // start datetime
+            startDT = r.nextLine();
+            // end datetime
+            endDT = r.nextLine();
+            while (r.hasNextLine()) {
+                // read each question
+                ArrayList<String> temp = new ArrayList<>();
+                temp.add(r.nextLine());
+                int numOfA = Integer.parseInt(r.nextLine());
+                for (int i = 0; i < numOfA; i++) {
+                    temp.add(r.nextLine());
+                }
+                currQuestions.add(temp);
+            }
+            r.close();
+            return true;
+        } catch (Exception e) {
+            System.out.println("loadtest: This test does not exist.\n try again");
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public int takenTest(String name) {
+        try {
+            String path = "Content/" + name + "_results.txt";
+            File file = new File(path);
+            Scanner r = new Scanner(file);
+            int count = 0;
+            while (r.hasNextLine()) {
+                String curStudent = r.nextLine().split(" ")[0];
+                if (curStudent.equals(name)) {
+                    count++;
+                }
+            }
+            return count;
+
+        } catch (Exception e) {
+            System.out.println("takentest: test dne or not loaded");
+            e.printStackTrace();
+            return -1;
+        }
+    }
+
+    public int takeTest(String name, String testName, String password) {
+        startTest = false;
+        if (loadTest(testName)) {
+
+            // check if user can even run the test
+            // is it within the time frame?
+
+            // have they taken the test before
+            int tries = takenTest(name);
+            if (tries == numOfTakes) {
+                System.out.println(name + " has already taken this test " + numOfTakes + " time(s).");
+                return -1;
+            } else {
+                System.out.println(name + ": Attempt #" + (tries + 1));
+            }
+            // run the test
+            startTest = true;
+            return 1;
+
+        } else {
+            // return an error
+            System.out.println("taketest: test dne");
+            return 0;
+        }
+
+    }
+
+    public String testList() {
+        String list = "";
+        File availFileFolder = new File("Content");
+        File[] listOfFiles = availFileFolder.listFiles();
+        String prevFile = "";
+        for (File file : listOfFiles) {
+            String currFile = file.getName().substring(0, file.getName().length() - 4).split("_")[0];
+            if (!currFile.equals(prevFile)) {
+                list += currFile + " \n ";
+            }
+            prevFile = currFile;
+        }
+        return list;
+    }
+
     public void run() {
         // init
         BufferedReader input = null;
@@ -76,10 +187,10 @@ public class ClientHandler implements Runnable {// for multithreading client req
             w.println("exit");
             w.flush();
             // save result
-            try (FileWriter fw = new FileWriter("Content/"+test+"_results.txt", true);
+            try (FileWriter fw = new FileWriter("Content/" + test + "_results.txt", true);
                     BufferedWriter bw = new BufferedWriter(fw);
                     PrintWriter out = new PrintWriter(bw)) {
-                out.println(studentName+" "+score);
+                out.println(studentName + " " + score);
             } catch (IOException e) {
                 // exception handling left as an exercise for the reader
             }

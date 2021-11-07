@@ -1,18 +1,19 @@
 package Server;
-
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.rmi.Naming;
+import java.rmi.RMISecurityManager;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Scanner;
 
 public class Supervisor {
     final static int PORT_NUMBER = 1234;
-    final static String[] USERS = { "admin" };
-    final static String[] PASSWORDS = { "admin" };
+    final static String[] USERS = { "admin", "teacher" };
+    final static String[] PASSWORDS = { "admin", "teacher" };
     final static Scanner sc = new Scanner(System.in);
 
     static String currentTest = "";
@@ -22,12 +23,14 @@ public class Supervisor {
     static ArrayList<Double> scores = new ArrayList<>();
 
     public static void main(String argv[]) {
-        if (argv.length != 2) {
-            System.out.println("Usage: java Server.Supervisor username password");
+        if (argv.length != 0) {
+            System.out.println("Usage: java -Djava.security.policy=Server/policy.txt Server.Supervisor");
             System.exit(0);
         }
-        String username = argv[0];
-        String password = argv[1];
+        System.out.print("Username: ");
+        String username = sc.nextLine();
+        System.out.print("Password: ");
+        String password = sc.nextLine();
         boolean login = false;
         for (int i = 0; i < USERS.length; i++) {
             if (username.equalsIgnoreCase(USERS[i])) {
@@ -38,39 +41,27 @@ public class Supervisor {
         }
         // verify login
         if (!login) {
-            System.out.println("Incorrect username or password");
-            System.out.println("Usage: java Server.Supervisor username password");
+            System.out.println("Incorrect username or password, try again later");
             System.exit(0);
         }
 
-        System.out.println("Welcome, " + username + "!");
+        System.out.println("\nWelcome, " + username + "!");
         displayMenu();
 
         if (startTest) {
-            // open socket
-            ServerSocket supervisor = null;
-            Socket newStudent = null;
             try {
-                // listen on port
-                supervisor = new ServerSocket(PORT_NUMBER);
-                supervisor.setReuseAddress(true);
-                // accept requests
-                while (true) {
-                    newStudent = supervisor.accept();
-                    // new thread
-                    ClientHandler newThread = new ClientHandler(newStudent, currentTest, currQuestions);
-                    new Thread(newThread).start();
+                if (System.getSecurityManager() == null) {
+                    System.setSecurityManager(new RMISecurityManager());
                 }
-            } catch (Exception e) {
-                System.out.println("Connection to student terminated");
-            } finally {
-                try {
-                    supervisor.close();
-                    newStudent.close();
-                } catch (Exception e) {
+                    ClassInterface ci = new ClientHandler("Supervisor");
+                    Naming.rebind("//127.0.0.1/Supervisor", ci);
+                    // waiting for students
+                    System.out.println("Tests are now being accepted\nPress Ctrl+C to exit");
+                } 
+            catch (Exception e) {
+                    System.out.println("Supervisor: " + e.getMessage());
                     e.printStackTrace();
                 }
-            }
         }
     }
 
@@ -99,7 +90,7 @@ public class Supervisor {
             break;
         case 2:
             // read available tests and get admin to select one
-            showTestMenu("");
+            startTest = true;
             break;
         case 3:
             // show test menu with stats instead of everytrhing else
@@ -119,30 +110,52 @@ public class Supervisor {
     }
 
     private static void createTest() {
+        //ask what the test should be named
         ArrayList<ArrayList<String>> questions = new ArrayList<>();
-        System.out.print("What would you like to name the Test / Poll: ");
+        System.out.print("\nWhat would you like to name the Test / Poll: ");
         String testName = sc.nextLine();
-        System.out.print("Would you like to add a question? (y/n) ");
-        while ("y".equalsIgnoreCase(sc.nextLine())) {
-            ArrayList<String> temp = new ArrayList<>();
-            temp.add(sc.nextLine());
-            System.out.print("Would you like to add an answer to this question? (y/n) ");
-            while ("y".equalsIgnoreCase(sc.nextLine())) {
-                System.out.println("please add a '!' to the beginning if this is the correct answer");
-                temp.add(sc.nextLine());
-                System.out.print("Would you like to add an answer to this question? (y/n) ");
-            }
-            questions.add(temp);
-            System.out.print("Would you like to add a question? (y/n) ");
-        }
         // add to a file
         String path = "Content/" + testName + ".txt";
         try {
             File file = new File(path);
             if (file.createNewFile()) {
-                System.out.println("File created: " + file.getName());
+                System.out.print("Please enter a password for the test: ");
+                String testpw = sc.nextLine();
+                System.out.print("Would you like to add a question? (y/n) ");
+                while ("y".equalsIgnoreCase(sc.nextLine())) {
+                    ArrayList<String> temp = new ArrayList<>();
+                    temp.add(sc.nextLine());
+                    System.out.print("Would you like to add an answer to this question? (y/n) ");
+                    while ("y".equalsIgnoreCase(sc.nextLine())) {
+                        System.out.println("please add a '!' to the beginning if this is the correct answer");
+                        temp.add(sc.nextLine());
+                        System.out.print("Would you like to add an answer to this question? (y/n) ");
+                    }
+                    questions.add(temp);
+                    System.out.print("Would you like to add a question? (y/n) ");
+                }
+                // how many retakes allowed
+                System.out.print("Please enter the number of retakes for the test (blank means infinite): ");
+                String retakes = sc.nextLine();
+                // start and end date and time
+                System.out.print("Is there a specified time frame for this test? (Y/n)");
+                String startDT = "";
+                String endDT = "";
+                if ("y".equalsIgnoreCase(sc.nextLine())) {
+                    System.out.print("what is the start date and time (yyyy-mm-dd hh:mm): ");
+                    startDT = sc.nextLine();
+                    System.out.print("what is the end date and time (yyyy-mm-dd hh:mm): ");
+                    endDT = sc.nextLine();
+                }
                 // write to file
                 FileWriter wr = new FileWriter(path);
+                // test password
+                wr.append(testpw + "\n");
+                // number of retakes
+                wr.append(retakes + "\n");
+                // start and end date and time
+                wr.append(startDT + "\n");
+                wr.append(endDT + "\n");
                 // loop questions
                 for (ArrayList<String> QA : questions) {
                     // write question
@@ -156,14 +169,15 @@ public class Supervisor {
                 }
 
                 wr.close();
+                System.out.println("Test Created : " + testName);
             } else {
-                System.out.println("File already exists.");
+                System.out.println("This Test already exists.\n");
             }
         } catch (IOException e) {
             System.out.println("An error occurred.");
             e.printStackTrace();
         }
-        System.out.println("Test / Poll Created : " + testName);
+        displayMenu();
     }
 
     private static void showTestMenu(String mode) {
@@ -178,7 +192,8 @@ public class Supervisor {
             }
             prevFile = currFile;
         }
-        //change the program so that any test can be taken at any time if within time/day specified
+        // change the program so that any test can be taken at any time if within
+        // time/day specified
         System.out.println("Please enter the name of the test that you would like to use:\n" + list);
         loadTest("Content/" + sc.nextLine() + ".txt");
         System.out.println("Test Loaded : " + currentTest);
@@ -200,17 +215,17 @@ public class Supervisor {
     }
 
     private static void deleteCurrent() {
-        File test = new File("Content/"+currentTest+".txt");
-        File testResults = new File("Content/"+currentTest+"_results.txt");
+        File test = new File("Content/" + currentTest + ".txt");
+        File testResults = new File("Content/" + currentTest + "_results.txt");
         if (test.delete()) {
             System.out.println("Deleted the test : " + currentTest);
         } else {
-            System.out.println("Failed to delete the test : "+currentTest);
+            System.out.println("Failed to delete the test : " + currentTest);
         }
         if (testResults.delete()) {
             System.out.println("Deleted the test results : " + currentTest);
         } else {
-            System.out.println("Failed to delete the test results : "+currentTest);
+            System.out.println("Failed to delete the test results : " + currentTest);
         }
     }
 
