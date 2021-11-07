@@ -1,4 +1,4 @@
-package Client;
+
 import java.rmi.*;
 import java.util.Scanner;
 
@@ -11,7 +11,7 @@ public class Student {
 
     public static void main(String argv[]) {
         if (argv.length != 0) {
-            System.out.println("Usage: java Client.Student");
+            System.out.println("Usage: java Student");
             System.exit(0);
         }
         // create scanner
