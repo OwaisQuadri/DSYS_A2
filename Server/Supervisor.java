@@ -1,9 +1,7 @@
-package Server;
+
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.net.ServerSocket;
-import java.net.Socket;
 import java.rmi.Naming;
 import java.rmi.RMISecurityManager;
 import java.text.DecimalFormat;
@@ -24,7 +22,7 @@ public class Supervisor {
 
     public static void main(String argv[]) {
         if (argv.length != 0) {
-            System.out.println("Usage: java -Djava.security.policy=Server/policy.txt Server.Supervisor");
+            System.out.println("Usage: java -Djava.security.policy=policy.txt Supervisor");
             System.exit(0);
         }
         System.out.print("Username: ");
@@ -53,15 +51,14 @@ public class Supervisor {
                 if (System.getSecurityManager() == null) {
                     System.setSecurityManager(new RMISecurityManager());
                 }
-                    ClassInterface ci = new ClientHandler("Supervisor");
-                    Naming.rebind("//127.0.0.1/Supervisor", ci);
-                    // waiting for students
-                    System.out.println("Tests are now being accepted\nPress Ctrl+C to exit");
-                } 
-            catch (Exception e) {
-                    System.out.println("Supervisor: " + e.getMessage());
-                    e.printStackTrace();
-                }
+                ClassInterface ci = (ClassInterface) new ClientHandler("Supervisor");
+                Naming.rebind("//127.0.0.1/Supervisor", ci);
+                // waiting for students
+                System.out.println("Tests are now being accepted\nPress Ctrl+C to exit");
+            } catch (Exception e) {
+                System.out.println("Supervisor: " + e.getMessage());
+                e.printStackTrace();
+            }
         }
     }
 
@@ -110,7 +107,7 @@ public class Supervisor {
     }
 
     private static void createTest() {
-        //ask what the test should be named
+        // ask what the test should be named
         ArrayList<ArrayList<String>> questions = new ArrayList<>();
         System.out.print("\nWhat would you like to name the Test / Poll: ");
         String testName = sc.nextLine();

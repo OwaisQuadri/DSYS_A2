@@ -1,4 +1,3 @@
-package Server;
 
 import java.io.*;
 import java.net.Socket;
@@ -8,7 +7,7 @@ import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Scanner;
 
-public class ClientHandler extends UnicastRemoteObject implements ClassInterface {// for multithreading client requests
+public class ClientHandler extends UnicastRemoteObject implements ClassInterface {
     private String name;
     private Socket client;
     private ArrayList<ArrayList<String>> questions;
@@ -79,6 +78,7 @@ public class ClientHandler extends UnicastRemoteObject implements ClassInterface
                     count++;
                 }
             }
+            r.close();
             return count;
 
         } catch (Exception e) {
@@ -116,18 +116,20 @@ public class ClientHandler extends UnicastRemoteObject implements ClassInterface
     }
 
     public String testList() {
-        String list = "";
-        File availFileFolder = new File("Content");
-        File[] listOfFiles = availFileFolder.listFiles();
-        String prevFile = "";
-        for (File file : listOfFiles) {
-            String currFile = file.getName().substring(0, file.getName().length() - 4).split("_")[0];
-            if (!currFile.equals(prevFile)) {
-                list += currFile + " \n ";
-            }
-            prevFile = currFile;
-        }
-        return list;
+        // String list = "";
+        // File availFileFolder = new File("Content");
+        // File[] listOfFiles = availFileFolder.listFiles();
+        // String prevFile = "";
+        // for (File file : listOfFiles) {
+        // String currFile = file.getName().substring(0, file.getName().length() -
+        // 4).split("_")[0];
+        // if (!currFile.equals(prevFile)) {
+        // list += currFile + " \n ";
+        // }
+        // prevFile = currFile;
+        // }
+        // return list;
+        return "TESTING 123";
     }
 
     public void run() {
