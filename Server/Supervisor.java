@@ -22,7 +22,7 @@ public class Supervisor {
 
     public static void main(String argv[]) {
         if (argv.length != 0) {
-            System.out.println("Usage: java -Djava.security.policy=policy.txt Supervisor");
+            System.out.println("Usage: java -Djava.security.policy=policy.txt Supervisor.java");
             System.exit(0);
         }
         System.out.print("Username: ");
@@ -112,7 +112,7 @@ public class Supervisor {
         System.out.print("\nWhat would you like to name the Test / Poll: ");
         String testName = sc.nextLine();
         // add to a file
-        String path = "Content/" + testName + ".txt";
+        String path = "../Content/" + testName + ".txt";
         try {
             File file = new File(path);
             if (file.createNewFile()) {
@@ -179,7 +179,7 @@ public class Supervisor {
 
     private static void showTestMenu(String mode) {
         String list = "";
-        File availFileFolder = new File("Content");
+        File availFileFolder = new File("../Content");
         File[] listOfFiles = availFileFolder.listFiles();
         String prevFile = "";
         for (File file : listOfFiles) {
@@ -192,7 +192,7 @@ public class Supervisor {
         // change the program so that any test can be taken at any time if within
         // time/day specified
         System.out.println("Please enter the name of the test that you would like to use:\n" + list);
-        loadTest("Content/" + sc.nextLine() + ".txt");
+        loadTest("../Content/" + sc.nextLine() + ".txt");
         System.out.println("Test Loaded : " + currentTest);
 
         switch (mode) {
@@ -212,8 +212,8 @@ public class Supervisor {
     }
 
     private static void deleteCurrent() {
-        File test = new File("Content/" + currentTest + ".txt");
-        File testResults = new File("Content/" + currentTest + "_results.txt");
+        File test = new File("../Content/" + currentTest + ".txt");
+        File testResults = new File("../Content/" + currentTest + "_results.txt");
         if (test.delete()) {
             System.out.println("Deleted the test : " + currentTest);
         } else {
@@ -230,7 +230,7 @@ public class Supervisor {
         // read current test stat file and take note of average, low and high marks
         DecimalFormat percent = new DecimalFormat("##0.00 %");
         try {
-            File file = new File("Content/" + currentTest + "_results.txt");
+            File file = new File("../Content/" + currentTest + "_results.txt");
             Scanner r = new Scanner(file);
             double sum = 0;
             int count = 0;
@@ -264,7 +264,6 @@ public class Supervisor {
             r.close();
         } catch (Exception e) {
             System.out.println("There are no statistics for this test");
-            e.printStackTrace();
         }
     }
 
@@ -275,7 +274,11 @@ public class Supervisor {
             File file = new File(path);
             Scanner r = new Scanner(file);
             currentTest = file.getName().substring(0, file.getName().length() - 4);
-
+            for (int i = 0; i < 4; i++) {
+                if (r.hasNextLine()) {
+                    r.nextLine();
+                }
+            }
             while (r.hasNextLine()) {
                 // read each question
                 ArrayList<String> temp = new ArrayList<>();

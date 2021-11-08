@@ -8,27 +8,22 @@ import java.util.ArrayList;
 import java.util.Scanner;
 
 public class ClientHandler extends UnicastRemoteObject implements ClassInterface {
-    private String name;
-    private Socket client;
-    private ArrayList<ArrayList<String>> questions;
     private String studentName;
     static String test = "";
     static String pw, startDT, endDT;
     static int numOfTakes;
     static ArrayList<ArrayList<String>> currQuestions = new ArrayList<>();
     boolean startTest = false;
-    Scanner student = new Scanner(System.in);
 
     // Constructor
     public ClientHandler(String s) throws RemoteException {
         super();
-        name = s;
     }
 
     private static boolean loadTest(String name) {
         // re-init loaded questions
         currQuestions = new ArrayList<>();
-        String path = "Content/" + name + ".txt";
+        String path = "../Content/" + name + ".txt";
         try {
             File file = new File(path);
             Scanner r = new Scanner(file);
@@ -40,7 +35,7 @@ public class ClientHandler extends UnicastRemoteObject implements ClassInterface
             if ((tempString = r.nextLine()).equals("")) {
                 numOfTakes = -1;
             } else {
-                numOfTakes = Integer.parseInt(r.nextLine());
+                numOfTakes = Integer.parseInt(tempString);
             }
 
             // start datetime
@@ -66,9 +61,9 @@ public class ClientHandler extends UnicastRemoteObject implements ClassInterface
         }
     }
 
-    public int takenTest(String name) {
+    public int getTimesTaken(String testName,String name) {
         try {
-            String path = "Content/" + name + "_results.txt";
+            String path = "../Content/" + testName + "_results.txt";
             File file = new File(path);
             Scanner r = new Scanner(file);
             int count = 0;
@@ -82,9 +77,9 @@ public class ClientHandler extends UnicastRemoteObject implements ClassInterface
             return count;
 
         } catch (Exception e) {
-            System.out.println("takentest: test dne or not loaded");
+            System.out.println("takentest: nobody has taken this test before");
             e.printStackTrace();
-            return -1;
+            return 0;
         }
     }
 
@@ -96,12 +91,13 @@ public class ClientHandler extends UnicastRemoteObject implements ClassInterface
             // is it within the time frame?
 
             // have they taken the test before
-            int tries = takenTest(name);
+            int tries = getTimesTaken(testName,name);
             if (tries == numOfTakes) {
                 System.out.println(name + " has already taken this test " + numOfTakes + " time(s).");
                 return -1;
             } else {
-                System.out.println(name + ": Attempt #" + (tries + 1));
+                System.out.println("Test " + testName + ": " + name + " Attempt " + (tries + 1) + "/"
+                        + (numOfTakes > 0 ? numOfTakes : "infinity"));
             }
             // run the test
             startTest = true;
@@ -116,106 +112,96 @@ public class ClientHandler extends UnicastRemoteObject implements ClassInterface
     }
 
     public String testList() {
-        // String list = "";
-        // File availFileFolder = new File("Content");
-        // File[] listOfFiles = availFileFolder.listFiles();
-        // String prevFile = "";
-        // for (File file : listOfFiles) {
-        // String currFile = file.getName().substring(0, file.getName().length() -
-        // 4).split("_")[0];
-        // if (!currFile.equals(prevFile)) {
-        // list += currFile + " \n ";
-        // }
-        // prevFile = currFile;
-        // }
-        // return list;
-        return "TESTING 123";
-    }
-
-    public void run() {
-        // init
-        BufferedReader input = null;
-        PrintWriter w = null;
-        // create input/output stream
-        try {
-            input = new BufferedReader(new InputStreamReader(client.getInputStream()));
-            w = new PrintWriter(client.getOutputStream());
-            // input, output ready
-            w.println("connected");
-            w.flush();
-            // get that students name
-            studentName = input.readLine();
-            System.out.println("new student connected: " + studentName);
-            // tell them the name of quiz
-            w.println(test);
-            w.flush();
-            int total = 0;
-            int correct = 0;
-            boolean isTest = false;
-            for (ArrayList<String> q : questions) {
-                w.println(q.get(0));// display q's
-                w.flush();
-                for (int i = 1; i < q.size(); i++) {
-                    String send = q.get(i);
-                    if (send.charAt(0) == '!') {
-                        send = send.substring(1);
-                        isTest = true;
-                    }
-                    send = i + ". " + send;
-                    w.println(send);
-                    w.flush();
-                }
-                if (!isTest) {
-                    correct++;
-                }
-                w.println("iosuhefiuherfiushzfgiu");
-                w.flush();
-                // accept answer
-                int ansIndex = Integer.parseInt(input.readLine());
-                // check for correct
-                if (q.get(ansIndex).charAt(0) == '!') {
-                    correct++;
-                    total++;
-                } else {
-                    total++;
-                }
+        String list = "";
+        File availFileFolder = new File("../Content");
+        File[] listOfFiles = availFileFolder.listFiles();
+        String prevFile = "";
+        for (File file : listOfFiles) {
+            String currFile = file.getName().substring(0, file.getName().length() - 4).split("_")[0];
+            if (!currFile.equals(prevFile)) {
+                list += currFile + "\n";
             }
-            // send result
-            double c = (double) correct;
-            double t = (double) total;
-            double score = c / t;
-            DecimalFormat percent = new DecimalFormat("#0.00 %");
-            w.println("Your score was : " + percent.format(score));
-            w.println("exit");
-            w.flush();
-            // save result
-            try (FileWriter fw = new FileWriter("Content/" + test + "_results.txt", true);
-                    BufferedWriter bw = new BufferedWriter(fw);
-                    PrintWriter out = new PrintWriter(bw)) {
-                out.println(studentName + " " + score);
-            } catch (IOException e) {
-                // exception handling left as an exercise for the reader
-            }
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            try {
-                // if (output !=null){
-                // output.close();
-                // }
-                if (input != null) {
-                    input.close();
-                }
-                if (w != null) {
-                    w.close();
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-
+            prevFile = currFile;
         }
+        return list;
+    }
+
+    public void uploadResult(String student, double result, String testName) {
+        // save result
+        try (FileWriter fw = new FileWriter("../Content/" + testName + "_results.txt", true);
+                BufferedWriter bw = new BufferedWriter(fw);
+                PrintWriter out = new PrintWriter(bw)) {
+                    out.println(student + " " + result);
+                    out.close();
+                    bw.close();
+                    fw.close();
+        } catch (IOException e) {
+            // exception handling left as an exercise for the reader
+            e.printStackTrace();
+        }
+    }
+
+    public String studentStats(String student) {
+        // read test stat files and take note of students grades, average, low and high
+        // marks
+        DecimalFormat percent = new DecimalFormat("##0.00 %");
+        String result = "";
+        for (String currTest : testList().split("\n")) {
+            if (currTest.equals("")) {
+
+            } else {
+                result += "\nTest: " + currTest + "\n";
+                try {
+                    File file = new File("../Content/" + currTest + "_results.txt");
+                    Scanner r = new Scanner(file);
+                    double sum = 0;
+                    int count = 0;
+                    double low = 2;
+                    double high = -1;
+                    double studentScore = -1;
+                    while (r.hasNextLine()) {
+                        String line=r.nextLine();
+                        String currStud = line.split(" ")[0];
+                        double entry = Double.parseDouble(line.split(" ")[1]);
+                        // sum and count for average
+                        sum += entry;
+                        // set as studentscore if currstud=student and if entry>studentScore
+                        if ((currStud.equals(student)) && (entry > studentScore)) {
+                            studentScore = entry;
+                        }
+                        count++;
+                        // check for new low
+                        if (entry < low) {
+                            low = entry;
+                        }
+                        // check for new high
+                        if (entry > high) {
+                            high = entry;
+                        }
+                    }
+                    if (low == 2) {
+                        result += "There are no statistics for this test\n\n";
+                    } else {
+                        double avg = sum / count;
+                        result += student + "'s Score: "
+                                + (studentScore != -1 ? percent.format(studentScore) : "test not taken yet") + "\n\n";
+                        result += "Average Class Score: " + percent.format(avg) + "\n";
+                        result += "Highest Class Score: " + percent.format(high) + "\n";
+                        result += "Lowest Class Score: " + percent.format(low) + "\n\n";
+
+                    }
+                    r.close();
+                } catch (Exception e) {
+                    result += "There is no statistics for this test\n\n";
+                    e.printStackTrace();
+                }
+            }
+        }
+        return result;
 
     }
 
+    public ArrayList<ArrayList<String>> getQuestions() {
+        return currQuestions;
+    }
 }

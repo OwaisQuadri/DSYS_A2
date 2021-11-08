@@ -1,5 +1,7 @@
 
 import java.rmi.*;
+import java.text.DecimalFormat;
+import java.util.ArrayList;
 import java.util.Scanner;
 
 public class Student {
@@ -8,14 +10,15 @@ public class Student {
     final static String[] USERS = { "owais", "student" };
     final static String[] PASSWORDS = { "owais", "student" };
     final static String ANSWER_KEY = "iosuhefiuherfiushzfgiu";
+    // create scanner
+    static Scanner sc = new Scanner(System.in);
 
     public static void main(String argv[]) {
         if (argv.length != 0) {
-            System.out.println("Usage: java Student");
+            System.out.println("Usage: java Student.java");
             System.exit(0);
         }
-        // create scanner
-        Scanner sc = new Scanner(System.in);
+
         System.out.print("Username: ");
         String username = sc.nextLine();
         System.out.print("Password: ");
@@ -40,32 +43,9 @@ public class Student {
             // configure RMI
             ClassInterface ci = (ClassInterface) Naming.lookup(name);
             // client stub ready
-            // ask student which test they want to take
-            String testName, testPW;
-            System.out.println("Which test would you like to take?\n" + ci.testList());
-            System.out.print("Test Name: ");
-            testName = sc.nextLine();
-            System.out.print("Test Password: ");
-            testPW = sc.nextLine();
-            // ask server to take a certain test
-            int TestStatus = ci.takeTest(username, testName, testPW);
-            switch (TestStatus) {
-            case -1:
-                System.out.println("This user has reached the maximum amount of tries for this test");
-                break;
-            case 0:
-                System.out.println("test does not exist");
-                break;
-            case 1:
-                System.out.println("the test will begin shortly");
-                startTest();
-                // when questions are all answered, get the student summary
-                getStats();
-                break;
-
-            default:
-                break;
-            }
+            // does student just want to see their own statistics or take a test
+            System.out.println("Welcome " + username + "!");
+            gotoMenu(ci,username);
 
         } catch (Exception e) {
             System.out.println("Submissions Unavailable : try again later.");
@@ -77,18 +57,110 @@ public class Student {
         // close sockets
 
     }
+    private static void gotoMenu(ClassInterface ci, String username) throws RemoteException {
+        switch (displayMenu()) {
+            case 1:
+                // take test
+                runTest(ci, username);
+                gotoMenu(ci, username);
+                break;
+            case 2:
+                // get stats
+                System.out.println(ci.studentStats(username));
+                gotoMenu(ci, username);
+                break;
+            case 3:
+                // exit
+                System.exit(0);
+            default:
+                System.out.println("Invalid entry : please enter a number from the above selection");
+                gotoMenu(ci, username);
+                break;
+            }
+    }
+    private static void runTest(ClassInterface ci, String username) throws RemoteException {
+        // ask student which test they want to take
+        String testName, testPW;
+        System.out.println("Which test would you like to take?\n" + ci.testList());
+        System.out.print("Test Name: ");
+        testName = sc.nextLine();
+        System.out.print("Test Password: ");
+        testPW = sc.nextLine();
+        // ask server to take a certain test
+        int TestStatus = ci.takeTest(username, testName, testPW);
+        switch (TestStatus) {
+        case -1:
+            System.out.println("This user has reached the maximum amount of tries for this test");
+            break;
+        case 0:
+            System.out.println("test does not exist");
+            break;
+        case 1:
+            System.out.println("the test will begin shortly");
+            // test taking time
+            ci.uploadResult(username, startTest(testName, ci.getQuestions()), testName);
+            break;
 
-    public static void startTest() {
-        // while there are unanswered questions
+        default:
+            break;
+        }
+    }
 
-        // ask for next question
-
-        // reply with answer to next question
+    private static int displayMenu() {
+        System.out.println("1. Take a Test");
+        System.out.println("2. Review Test Stats");
+        System.out.println("3. Exit");
+        System.out.println("please enter a number from the above selection");
+        int input = 0;
+        try {
+            input = Integer.parseInt(sc.nextLine());
+        } catch (Exception e) {
+            System.out.println("Invalid entry : no integer detected, try again");
+            displayMenu();
+            input = 0;
+        }
+        return input;
 
     }
 
-    public static void getStats() {
-        // student summary: names of all tests taken with the highest scores (vs class
-        // average,low and high) (and maybe subject averages if applicable)
+    public static double startTest(String testName, ArrayList<ArrayList<String>> questions) {
+        // tell them the name of quiz
+        System.out.println("Test " + testName + " is starting now:");
+        int total = 0;
+        int correct = 0;
+        boolean isTest = false;
+        for (ArrayList<String> q : questions) {
+            System.out.println(q.get(0));// display q's
+            for (int i = 1; i < q.size(); i++) {
+                String send = q.get(i);
+                if (send.charAt(0) == '!') {
+                    send = send.substring(1);
+                    isTest = true;
+                }
+                send = i + ". " + send;
+                System.out.println(send);
+            }
+            if (!isTest) {
+                correct++;
+            }
+            // accept answer
+            int ansIndex = Integer.parseInt(sc.nextLine());
+            // check for correct
+            if (q.get(ansIndex).charAt(0) == '!') {
+                correct++;
+                total++;
+            } else {
+                total++;
+            }
+
+        }
+        // send result to user
+        double c = (double) correct;
+        double t = (double) total;
+        double result = c / t;
+        DecimalFormat percent = new DecimalFormat("#0.00 %");
+        System.out.println("Your score was : " + percent.format(result) + "\n");
+        return result;
+
     }
 }
