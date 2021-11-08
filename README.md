@@ -10,14 +10,17 @@ Instructions to Download:
 Run command:
 ```
 git clone https://github.com/OwaisQuadri/DSYS_A2 
+cd DSYS_A2
 ```
 or  
 ```
+git clone assignmentsubmissionURL
+cd DSYS_A2
 ```
   
 Instructions to Run:  
   
-1. Open a new terminal in "DSYS_A1" directory and run these commands to start a Supervisor session.
+1. Open a new terminal in the "DSYS_A2" directory and run these commands to start a Supervisor session.
 ```
 cd Server
 start rmiregistry
@@ -25,7 +28,7 @@ java -Djava.security.policy=policy.txt Supervisor
 ```
 for now, use the username "admin" and password "admin".  
   
-2. Open a new terminal in "DSYS_A1" directory and run these commands to start a Student session.
+2. Open a new terminal in "DSYS_A2" directory and run these commands to start a Student session.
 ```
 cd Client
 java Student
