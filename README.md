@@ -11,17 +11,26 @@ Run command:
 ```
 git clone https://github.com/OwaisQuadri/DSYS_A2 
 ```
+or  
+```
+```
   
-Instructions to open a new Supervisor session:  
-<ol>
-<li>Open a new terminal in "DSYS_A1" directory</li>
-<li>Run command "java Server.Supervisor username password" with an authorized username and password.</li>
-</ol>  
-for now, use the username "admin" and password "admin"  
+Instructions to Run:  
   
-Instructions to open a new Student session:  
-<ol>
-<li>Open a new terminal in "DSYS_A1" directory.</li>
-<li>Run command "java Client.Student username password" with an authorized username and password.</li>
-</ol>  
-for now, use the username "owais" and password "owais"
+1. Open a new terminal in "DSYS_A1" directory and run these commands to start a Supervisor session.
+```
+cd Server
+start rmiregistry
+java -Djava.security.policy=policy.txt Supervisor
+```
+for now, use the username "admin" and password "admin".  
+  
+2. Open a new terminal in "DSYS_A1" directory and run these commands to start a Student session.
+```
+cd Client
+java Student
+``` 
+there are a few logins for students, please use one of the following pairs:  
+- UN: "student" , PW: "student"
+- UN: "owais" , PW: "owais"
+- UN: "john" , PW: "john"
