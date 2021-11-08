@@ -1,0 +1,82 @@
+Ottawa
+5
+2021-11-08 10:00
+2021-11-08 10:30
+Ontario
+4
+Ottawa
+Peterborough
+Mississauga
+!Toronto
+Quebec
+4
+Montreal
+Laval
+!Quebec City
+Gatineau
+Newfoundland and Labrador
+4
+!St.John's
+Gander
+Labrador City
+Mount Pearl
+Nova Scotia
+4
+Truro
+Halifax
+Lunenburg
+Amherst
+New Brunswick
+4
+Moncton
+!Fredericton
+Bathurst
+Dieppe
+Prince Edward Island
+4
+Souris
+Alberton
+Cornwall
+!Charlottetown
+Manitoba
+4
+!Winnepeg
+Brandon
+Steinbach
+Thompson
+Saskatchewan
+4
+Estevan
+Moose Jaw
+!Regina
+Saskatoon
+Alberta
+4
+Calgary
+!Edmonton
+St. Albert
+Medicine Hat
+British Columbia
+4
+!Victoria
+Kelowna
+Vancouver
+Nanaimo
+Nunavut
+4
+Baker Lake
+!Iqaluit
+Igloolik
+Gjoa Haven
+Northwest Territories
+4
+Hay River
+Normana Wells
+Inuvik
+!Yellowknife
+Yukon
+4
+Dawson City
+!Whitehorse
+Yukon
+Alert

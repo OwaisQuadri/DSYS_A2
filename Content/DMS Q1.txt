@@ -1,0 +1,52 @@
+quiz1
+2
+2021-11-7 20:30
+2021-11-7 20:55
+A _ is a general purpose software system that facilitates the process of defining, constructing, manmipulating and sharing databases among vairous users and applications.
+4
+Meta-Database System
+Database Application
+Data Store Manager
+!Database Management System
+The DBMS should:
+4
+share data between many users
+allow concurrent transactions
+be an open source application
+!all of the above
+The database system is:
+4
+the database itself
+!the combination of the database and DBMS software
+DBMS
+none of the above
+An example of a representational data model is _.
+4
+ER Model
+Hash Model
+Data Index
+!Relation Data Model
+A _ is a language used to identify description of schema construct and store schema description in the DBMS catalog.
+4
+!DDL: Data Definition Language
+DIL: Data Identification Language
+DML: Data Manipulation Language
+DSL: Data Storage Language
+It is recommended to use the DBMS approach when:
+4
+!None of the other options
+there is a high overhead and costs more than needed.
+the database needs to be installed in an embedded system
+the database and applications are not expected to change in the future
+The Data Definition Language (DDL) is used to:
+4
+!Define both conceptual and internal schema
+none of the other options
+To specify the physical structure of the data storage.
+Specify user views and their mappings to the conceptual schema
+A _ represents the actual data in a database at a particular moment in time.
+4
+Database Model
+Database Image
+!Database State
+Database Management System

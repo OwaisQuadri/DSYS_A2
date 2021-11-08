@@ -16,13 +16,12 @@ public class Supervisor {
 
     static String currentTest = "";
     static ArrayList<ArrayList<String>> currQuestions = new ArrayList<>();
-    static boolean startTest = false;
 
     static ArrayList<Double> scores = new ArrayList<>();
 
     public static void main(String argv[]) {
         if (argv.length != 0) {
-            System.out.println("Usage: java -Djava.security.policy=policy.txt Supervisor.java");
+            System.out.println("Usage: java -Djava.security.policy=policy.txt Supervisor");
             System.exit(0);
         }
         System.out.print("Username: ");
@@ -45,21 +44,6 @@ public class Supervisor {
 
         System.out.println("\nWelcome, " + username + "!");
         displayMenu();
-
-        if (startTest) {
-            try {
-                if (System.getSecurityManager() == null) {
-                    System.setSecurityManager(new RMISecurityManager());
-                }
-                ClassInterface ci = (ClassInterface) new ClientHandler("Supervisor");
-                Naming.rebind("//127.0.0.1/Supervisor", ci);
-                // waiting for students
-                System.out.println("Tests are now being accepted\nPress Ctrl+C to exit");
-            } catch (Exception e) {
-                System.out.println("Supervisor: " + e.getMessage());
-                e.printStackTrace();
-            }
-        }
     }
 
     private static void displayMenu() {
@@ -84,33 +68,63 @@ public class Supervisor {
         case 1:
             // create test and store in local file under Content/
             createTest();
+            displayMenu();
             break;
         case 2:
             // read available tests and get admin to select one
-            startTest = true;
+            startTest();
             break;
         case 3:
             // show test menu with stats instead of everytrhing else
             showTestMenu("stats");
+            displayMenu();
+            break;
         case 4:
             // delete test
             showTestMenu("del");
+            displayMenu();
             break;
         case 5:
             System.exit(0);
             break;
         default:
-            System.out.println("Invalid entry : please enter a number from the above selection");
+            System.out.println("Invalid entry : please enter a number from the above selection\n");
             displayMenu();
             break;
         }
     }
 
+    private static void startTest() {
+
+        try {
+            if (System.getSecurityManager() == null) {
+                System.setSecurityManager(new RMISecurityManager());
+            }
+            ClassInterface ci = (ClassInterface) new ClientHandler("Supervisor");
+            Naming.rebind("//127.0.0.1/Supervisor", ci);
+            // waiting for students
+            System.out.println(
+                    "Tests are now being accepted\n" + "Press Ctrl+C or enter \"exit\" to stop accepting submissions.");
+            while (sc.nextLine().equalsIgnoreCase("exit")) {
+                System.out.println("Exiting .. ");
+                System.exit(0);
+
+            }
+        } catch (Exception e) {
+            System.out.println("Exiting .. ");
+        }
+
+    }
+
     private static void createTest() {
         // ask what the test should be named
         ArrayList<ArrayList<String>> questions = new ArrayList<>();
-        System.out.print("\nWhat would you like to name the Test / Poll: ");
+        System.out.print("\nWhat would you like to name the Test? ");
         String testName = sc.nextLine();
+        // cannot have a space or _ in the name
+        if (testName.contains("_")) {
+            System.out.println("Please do not use \"_\" in the test name");
+        }
         // add to a file
         String path = "../Content/" + testName + ".txt";
         try {
@@ -174,7 +188,6 @@ public class Supervisor {
             System.out.println("An error occurred.");
             e.printStackTrace();
         }
-        displayMenu();
     }
 
     private static void showTestMenu(String mode) {
@@ -185,7 +198,7 @@ public class Supervisor {
         for (File file : listOfFiles) {
             String currFile = file.getName().substring(0, file.getName().length() - 4).split("_")[0];
             if (!currFile.equals(prevFile)) {
-                list += currFile + " \n ";
+                list += "\t"+currFile + "\n";
             }
             prevFile = currFile;
         }
@@ -198,14 +211,12 @@ public class Supervisor {
         switch (mode) {
         case "stats":
             printStats();
-            System.exit(0);
             break;
         case "del":
             deleteCurrent();
             break;
 
         default:
-            startTest = true;
             break;
         }
 
@@ -257,13 +268,13 @@ public class Supervisor {
                 System.out.println("Number of attempts overall: " + count);
                 System.out.println("Average Score: " + percent.format(avg));
                 System.out.println("Highest Score: " + percent.format(high));
-                System.out.println("Lowest Score: " + percent.format(low));
+                System.out.println("Lowest Score: " + percent.format(low)+"\n");
 
             }
 
             r.close();
         } catch (Exception e) {
-            System.out.println("There are no statistics for this test");
+            System.out.println("There are no statistics for this test\n");
         }
     }
 

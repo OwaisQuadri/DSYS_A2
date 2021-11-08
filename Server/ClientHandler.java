@@ -4,7 +4,9 @@ import java.net.Socket;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Scanner;
 
 public class ClientHandler extends UnicastRemoteObject implements ClassInterface {
@@ -61,7 +63,7 @@ public class ClientHandler extends UnicastRemoteObject implements ClassInterface
         }
     }
 
-    public int getTimesTaken(String testName,String name) {
+    public int getTimesTaken(String testName, String name) {
         try {
             String path = "../Content/" + testName + "_results.txt";
             File file = new File(path);
@@ -88,16 +90,37 @@ public class ClientHandler extends UnicastRemoteObject implements ClassInterface
         if (loadTest(testName)) {
 
             // check if user can even run the test
+            boolean validDT;
             // is it within the time frame?
-
-            // have they taken the test before
-            int tries = getTimesTaken(testName,name);
-            if (tries == numOfTakes) {
-                System.out.println(name + " has already taken this test " + numOfTakes + " time(s).");
-                return -1;
+            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+            try {
+                Date start = dateFormat.parse(startDT);
+                Date end = dateFormat.parse(endDT);
+                Date now = new Date();
+                validDT = (now.before(end)) && (now.after(start));
+            } catch (Exception e) {
+                // no limit
+                validDT = true;
+            }
+            //
+            // have they taken the test before and do they have the right password
+            boolean validPW = password.equals(pw);
+            if (validPW) {
+                if (validDT) {
+                    int tries = getTimesTaken(testName, name);
+                    if (tries == numOfTakes) {
+                        System.out.println(name + " has already taken this test " + numOfTakes + " time(s).");
+                        return -1;
+                    } else {
+                        System.out.println("Test " + testName + ": " + name + " Attempt " + (tries + 1) + "/"
+                                + (numOfTakes > 0 ? numOfTakes : "infinity"));
+                    }
+                } else {
+                    // not within timeframe
+                    return -2;
+                }
             } else {
-                System.out.println("Test " + testName + ": " + name + " Attempt " + (tries + 1) + "/"
-                        + (numOfTakes > 0 ? numOfTakes : "infinity"));
+                return -3;
             }
             // run the test
             startTest = true;
@@ -119,7 +142,7 @@ public class ClientHandler extends UnicastRemoteObject implements ClassInterface
         for (File file : listOfFiles) {
             String currFile = file.getName().substring(0, file.getName().length() - 4).split("_")[0];
             if (!currFile.equals(prevFile)) {
-                list += currFile + "\n";
+                list += "\t"+currFile + "\n";
             }
             prevFile = currFile;
         }
@@ -131,10 +154,10 @@ public class ClientHandler extends UnicastRemoteObject implements ClassInterface
         try (FileWriter fw = new FileWriter("../Content/" + testName + "_results.txt", true);
                 BufferedWriter bw = new BufferedWriter(fw);
                 PrintWriter out = new PrintWriter(bw)) {
-                    out.println(student + " " + result);
-                    out.close();
-                    bw.close();
-                    fw.close();
+            out.println(student + " " + result);
+            out.close();
+            bw.close();
+            fw.close();
         } catch (IOException e) {
             // exception handling left as an exercise for the reader
             e.printStackTrace();
@@ -160,7 +183,7 @@ public class ClientHandler extends UnicastRemoteObject implements ClassInterface
                     double high = -1;
                     double studentScore = -1;
                     while (r.hasNextLine()) {
-                        String line=r.nextLine();
+                        String line = r.nextLine();
                         String currStud = line.split(" ")[0];
                         double entry = Double.parseDouble(line.split(" ")[1]);
                         // sum and count for average

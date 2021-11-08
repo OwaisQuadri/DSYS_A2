@@ -7,15 +7,15 @@ import java.util.Scanner;
 public class Student {
 
     final static int PORT_NUMBER = 1234;
-    final static String[] USERS = { "owais", "student" };
-    final static String[] PASSWORDS = { "owais", "student" };
+    final static String[] USERS = { "owais", "student","john" };
+    final static String[] PASSWORDS = { "owais", "student","john" };
     final static String ANSWER_KEY = "iosuhefiuherfiushzfgiu";
     // create scanner
     static Scanner sc = new Scanner(System.in);
 
     public static void main(String argv[]) {
         if (argv.length != 0) {
-            System.out.println("Usage: java Student.java");
+            System.out.println("Usage: java Student");
             System.exit(0);
         }
 
@@ -34,7 +34,7 @@ public class Student {
         // verify login
         if (!login) {
             System.out.println("Incorrect username or password");
-            System.out.println("Usage: java Client.Student");
+            System.out.println("Usage: java Student");
             System.exit(0);
         }
 
@@ -45,7 +45,7 @@ public class Student {
             // client stub ready
             // does student just want to see their own statistics or take a test
             System.out.println("Welcome " + username + "!");
-            gotoMenu(ci,username);
+            gotoMenu(ci, username);
 
         } catch (Exception e) {
             System.out.println("Submissions Unavailable : try again later.");
@@ -57,27 +57,29 @@ public class Student {
         // close sockets
 
     }
+
     private static void gotoMenu(ClassInterface ci, String username) throws RemoteException {
         switch (displayMenu()) {
-            case 1:
-                // take test
-                runTest(ci, username);
-                gotoMenu(ci, username);
-                break;
-            case 2:
-                // get stats
-                System.out.println(ci.studentStats(username));
-                gotoMenu(ci, username);
-                break;
-            case 3:
-                // exit
-                System.exit(0);
-            default:
-                System.out.println("Invalid entry : please enter a number from the above selection");
-                gotoMenu(ci, username);
-                break;
-            }
+        case 1:
+            // take test
+            runTest(ci, username);
+            gotoMenu(ci, username);
+            break;
+        case 2:
+            // get stats
+            System.out.println(ci.studentStats(username));
+            gotoMenu(ci, username);
+            break;
+        case 3:
+            // exit
+            System.exit(0);
+        default:
+            System.out.println("Invalid entry : please enter a number from the above selection");
+            gotoMenu(ci, username);
+            break;
+        }
     }
+
     private static void runTest(ClassInterface ci, String username) throws RemoteException {
         // ask student which test they want to take
         String testName, testPW;
@@ -89,11 +91,19 @@ public class Student {
         // ask server to take a certain test
         int TestStatus = ci.takeTest(username, testName, testPW);
         switch (TestStatus) {
+        case -3:
+            // incorrect password
+            System.out.println("The test password was incorrect");
+            break;
+        case -2:
+            // not within time frame
+            System.out.println("This test is unavailable at this time\n");
+            break;
         case -1:
             System.out.println("This user has reached the maximum amount of tries for this test");
             break;
         case 0:
-            System.out.println("test does not exist");
+            System.out.println("This test does not exist");
             break;
         case 1:
             System.out.println("the test will begin shortly");
