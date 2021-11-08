@@ -18,7 +18,6 @@ public class ClientHandler extends UnicastRemoteObject implements ClassInterface
      * 
      */
     // init vairables
-    private static String test = "";
     private static String pw, startDT, endDT;
     private static int numOfTakes;
     private static ArrayList<ArrayList<String>> currQuestions = new ArrayList<>();
@@ -35,7 +34,7 @@ public class ClientHandler extends UnicastRemoteObject implements ClassInterface
      *
      * purpose: provides questions to client system for test taking.
      */
-    public ArrayList<ArrayList<String>> getQuestions() {
+    public ArrayList<ArrayList<String>> getQuestions() throws RemoteException {
         return currQuestions;
     }
 
@@ -44,7 +43,7 @@ public class ClientHandler extends UnicastRemoteObject implements ClassInterface
      * int ;
      *
      * purpose: returns the number of times that a certain student has taken a
-     * certain test.
+     * certain test. Helper fuction for takeTesk()
      */
     public int getTimesTaken(String testName, String name) {
         try {
@@ -126,7 +125,7 @@ public class ClientHandler extends UnicastRemoteObject implements ClassInterface
      * class, also shows due date of available tests and availability dates for
      * unavailable tests.
      */
-    public String studentStats(String student) {
+    public String studentStats(String student) throws RemoteException {
         // read test stat files and take note of students grades, average, low and high
         // marks
         // init output format
@@ -193,7 +192,7 @@ public class ClientHandler extends UnicastRemoteObject implements ClassInterface
                         // show availability
                         result += "Available on: " + startDT + "\n";
                         result += "Due on: " + endDT + "\n\n";
-                        //show class stats
+                        // show class stats
                         result += "Average Class Score: " + percent.format(avg) + "\n";
                         result += "Highest Class Score: " + percent.format(high) + "\n";
                         result += "Lowest Class Score: " + percent.format(low) + "\n\n";
@@ -227,7 +226,7 @@ public class ClientHandler extends UnicastRemoteObject implements ClassInterface
      * purpose: returns the status number when test is loaded and verified (test
      * password and time availability).
      */
-    public int takeTest(String name, String testName, String password) {
+    public int takeTest(String name, String testName, String password) throws RemoteException {
         startTest = false;
         if (loadTest(testName)) {
 
@@ -281,10 +280,10 @@ public class ClientHandler extends UnicastRemoteObject implements ClassInterface
      *
      * purpose: List the available tests on the network.
      */
-    public String testList() {
-        //init list string
+    public String testList() throws RemoteException {
+        // init list string
         String list = "";
-        //go through files in folder
+        // go through files in folder
         File availFileFolder = new File("../Content");
         File[] listOfFiles = availFileFolder.listFiles();
         String prevFile = "";
@@ -295,7 +294,7 @@ public class ClientHandler extends UnicastRemoteObject implements ClassInterface
             if (!currFile.equals(prevFile)) {
                 list += currFile + "\n";
             }
-            //update prevfile
+            // update prevfile
             prevFile = currFile;
         }
         return list;
@@ -307,9 +306,9 @@ public class ClientHandler extends UnicastRemoteObject implements ClassInterface
      *
      * purpose: upload student's supplied test result to file for given test.
      */
-    public void uploadResult(String student, double result, String testName) {
+    public void uploadResult(String student, double result, String testName) throws RemoteException {
         // save result to its corresponding file
-        try (FileWriter fw = new FileWriter("../Content/" + testName + "_results.txt", true);//append=true
+        try (FileWriter fw = new FileWriter("../Content/" + testName + "_results.txt", true); // append=true
                 BufferedWriter bw = new BufferedWriter(fw);
                 PrintWriter out = new PrintWriter(bw)) {
             out.println(student + " " + result);
@@ -317,7 +316,7 @@ public class ClientHandler extends UnicastRemoteObject implements ClassInterface
             bw.close();
             fw.close();
         } catch (IOException e) {
-            
+
         }
     }
 }
