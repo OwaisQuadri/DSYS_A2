@@ -9,44 +9,65 @@ import java.util.ArrayList;
 import java.util.Scanner;
 
 public class Supervisor {
-    final static int PORT_NUMBER = 1234;
+    /*
+     * 
+     * Class Supervisor created on 2021-11-06 to act as an RMI server for students
+     * to take an exam or review their marks. This class is also an interface for
+     * teachers and administrators to create, delete and review test and their
+     * statistics.
+     * 
+     */
+
+    // initialize
+    // constant
     final static String[] USERS = { "admin", "teacher" };
     final static String[] PASSWORDS = { "admin", "teacher" };
     final static Scanner sc = new Scanner(System.in);
-
-    static String currentTest = "";
-    static ArrayList<ArrayList<String>> currQuestions = new ArrayList<>();
-
-    static ArrayList<Double> scores = new ArrayList<>();
+    // variables
+    private static String currentTest = "";
+    private static ArrayList<ArrayList<String>> currQuestions = new ArrayList<>();
 
     public static void main(String argv[]) {
+        // make sure no arguements are passed
         if (argv.length != 0) {
             System.out.println("Usage: java -Djava.security.policy=policy.txt Supervisor");
             System.exit(0);
         }
+        // prompt user for username
         System.out.print("Username: ");
         String username = sc.nextLine();
+        // prompt user for password
         System.out.print("Password: ");
         String password = sc.nextLine();
+        // verify login
         boolean login = false;
+        // check the constant arrays of usernames and corresponding passwords for match
         for (int i = 0; i < USERS.length; i++) {
-            if (username.equalsIgnoreCase(USERS[i])) {
+            if (username.equalsIgnoreCase(USERS[i])) {// ignore case on username only
                 if (password.equals(PASSWORDS[i])) {
-                    login = true;
+                    login = true;// verified
                 }
             }
         }
-        // verify login
+        // if login not verified, exit
         if (!login) {
             System.out.println("Incorrect username or password, try again later");
             System.exit(0);
         }
-
+        // welcome the verified user
         System.out.println("\nWelcome, " + username + "!");
+        // show menu
         displayMenu();
     }
 
+    /*
+     * Method name: displayMenu ; accepts: no parameters ; returns: void ;
+     *
+     * purpose: show user possible actions and guide user towards those actions when
+     * selected. Then send user to perform the selected action.
+     */
     private static void displayMenu() {
+        // command line menu
         System.out.println("1. Create New Test");
         System.out.println("2. Accept Test Submissions");
         System.out.println("3. Review Test Stats");
@@ -54,6 +75,7 @@ public class Supervisor {
         System.out.println("5. Exit");
         System.out.println("please enter a number from the above selection");
         int input = 0;
+        // make sure input is proper
         try {
             input = Integer.parseInt(sc.nextLine());
         } catch (Exception e) {
@@ -61,6 +83,7 @@ public class Supervisor {
             displayMenu();
             input = 0;
         }
+        // switch statement on input
         switch (input) {
         case 0:
             // do nothing
@@ -68,54 +91,43 @@ public class Supervisor {
         case 1:
             // create test and store in local file under Content/
             createTest();
+            // come back to menu once done
             displayMenu();
             break;
         case 2:
             // read available tests and get admin to select one
-            startTest();
+            startTest();// does not come back to menu because program is exited
             break;
         case 3:
             // show test menu with stats instead of everytrhing else
             showTestMenu("stats");
+            // come back to menu once done
             displayMenu();
             break;
         case 4:
             // delete test
             showTestMenu("del");
+            // come back to menu once done
             displayMenu();
             break;
         case 5:
+            // exit
             System.exit(0);
             break;
         default:
+            // invalid entry
             System.out.println("Invalid entry : please enter a number from the above selection\n");
             displayMenu();
             break;
         }
     }
 
-    private static void startTest() {
-
-        try {
-            if (System.getSecurityManager() == null) {
-                System.setSecurityManager(new RMISecurityManager());
-            }
-            ClassInterface ci = (ClassInterface) new ClientHandler("Supervisor");
-            Naming.rebind("//127.0.0.1/Supervisor", ci);
-            // waiting for students
-            System.out.println(
-                    "Tests are now being accepted\n" + "Press Ctrl+C or enter \"exit\" to stop accepting submissions.");
-            while (sc.nextLine().equalsIgnoreCase("exit")) {
-                System.out.println("Exiting .. ");
-                System.exit(0);
-
-            }
-        } catch (Exception e) {
-            System.out.println("Exiting .. ");
-        }
-
-    }
-
+    /*
+     * Method name: createTest ; accepts: no parameters ; returns: void ;
+     * 
+     * purpose: interface for administrators and teachers to create and save tests
+     * for later use.
+     */
     private static void createTest() {
         // ask what the test should be named
         ArrayList<ArrayList<String>> questions = new ArrayList<>();
@@ -180,39 +192,80 @@ public class Supervisor {
                 }
 
                 wr.close();
-                System.out.println("Test Created : " + testName);
+                System.out.println("Test Created : " + testName + "\n");
             } else {
                 System.out.println("This Test already exists.\n");
             }
         } catch (IOException e) {
             System.out.println("An error occurred.");
-            e.printStackTrace();
         }
     }
 
+    /*
+     * Method name: startTest ; accepts: no parameters ; returns: void ;
+     *
+     * purpose: binds "ClassInterface" implementation "ClientHandler" to RMI socket
+     * to accept and deal with clients' requests. exit program when "exit" or
+     * 'Ctrl+C' are typed.
+     */
+    private static void startTest() {
+
+        try {
+            if (System.getSecurityManager() == null) {
+                System.setSecurityManager(new RMISecurityManager());
+            }
+            ClassInterface ci = (ClassInterface) new ClientHandler("Supervisor");
+            Naming.rebind("//127.0.0.1/Supervisor", ci);
+            // waiting for students
+            System.out.println(
+                    "Tests are now being accepted\n" + "Press Ctrl+C or enter \"exit\" to stop accepting submissions.");
+            while (sc.nextLine().equalsIgnoreCase("exit")) {
+                System.out.println("Exiting .. ");
+                System.exit(0);
+
+            }
+        } catch (Exception e) {
+            System.out.println("Exiting .. ");
+        }
+
+    }
+
+    /*
+     * Method name: showTestMenu ; accepts: String mode ; returns: void ;
+     *
+     * purpose: shows the available tests, but the action that happens to the test
+     * is dependent on the input String. Actions that could be performed on the
+     * selected test are: Delete and View Stats.
+     */
     private static void showTestMenu(String mode) {
+        // list available tests
         String list = "";
         File availFileFolder = new File("../Content");
         File[] listOfFiles = availFileFolder.listFiles();
         String prevFile = "";
         for (File file : listOfFiles) {
+            // file names : testName.txt || testName_results.txt
             String currFile = file.getName().substring(0, file.getName().length() - 4).split("_")[0];
+            // to prevent writing testName twice
             if (!currFile.equals(prevFile)) {
-                list += "\t"+currFile + "\n";
+                list += "\t" + currFile + "\n";
             }
+            // update prevFile
             prevFile = currFile;
         }
-        // change the program so that any test can be taken at any time if within
-        // time/day specified
         System.out.println("Please enter the name of the test that you would like to use:\n" + list);
+        // load selected Test
         loadTest("../Content/" + sc.nextLine() + ".txt");
+        // if no crash, test is loaded
         System.out.println("Test Loaded : " + currentTest);
-
+        // perform action on loaded test
         switch (mode) {
         case "stats":
+            // print class stats
             printStats();
             break;
         case "del":
+            // delete test in question
             deleteCurrent();
             break;
 
@@ -222,21 +275,48 @@ public class Supervisor {
 
     }
 
-    private static void deleteCurrent() {
-        File test = new File("../Content/" + currentTest + ".txt");
-        File testResults = new File("../Content/" + currentTest + "_results.txt");
-        if (test.delete()) {
-            System.out.println("Deleted the test : " + currentTest);
-        } else {
-            System.out.println("Failed to delete the test : " + currentTest);
-        }
-        if (testResults.delete()) {
-            System.out.println("Deleted the test results : " + currentTest);
-        } else {
-            System.out.println("Failed to delete the test results : " + currentTest);
+    /*
+     * Method name: loadTest ; accepts: String path ; returns: void ;
+     *
+     * purpose: Load test and its questions from a file specified by the path
+     * parameter
+     */
+    private static void loadTest(String path) {
+        // re-init loaded questions
+        currQuestions = new ArrayList<>();
+        try {
+            File file = new File(path);// connect to Test file
+            Scanner r = new Scanner(file);// open filereader
+            currentTest = file.getName().substring(0, file.getName().length() - 4);
+            for (int i = 0; i < 4; i++) {
+                if (r.hasNextLine()) {
+                    r.nextLine();
+                }
+            }
+            // add arraylist of questions and answers into the questions arraylist
+            while (r.hasNextLine()) {
+                // read each question
+                ArrayList<String> temp = new ArrayList<>();
+                temp.add(r.nextLine());
+                int numOfA = Integer.parseInt(r.nextLine());
+                for (int i = 0; i < numOfA; i++) {
+                    temp.add(r.nextLine());
+                }
+                currQuestions.add(temp);
+            }
+            // close filereader
+            r.close();
+        } catch (Exception e) {
+            System.out.println("An error occurred: the Test does not exist");
         }
     }
 
+    /*
+     * Method name: printStats ; accepts: no parameters ; returns: void ;
+     *
+     * purpose: print the statistics of the submissions on the current test which is
+     * selected/loaded.
+     */
     private static void printStats() {
         // read current test stat file and take note of average, low and high marks
         DecimalFormat percent = new DecimalFormat("##0.00 %");
@@ -262,48 +342,47 @@ public class Supervisor {
                 }
             }
             if (low == 2) {
+                // file was emptied
                 System.out.println("This file is empty");
             } else {
+                // output stats
                 double avg = sum / count;
                 System.out.println("Number of attempts overall: " + count);
                 System.out.println("Average Score: " + percent.format(avg));
                 System.out.println("Highest Score: " + percent.format(high));
-                System.out.println("Lowest Score: " + percent.format(low)+"\n");
+                System.out.println("Lowest Score: " + percent.format(low) + "\n");
 
             }
 
             r.close();
         } catch (Exception e) {
+            // file was never created
             System.out.println("There are no statistics for this test\n");
         }
     }
 
-    private static void loadTest(String path) {
-        // re-init loaded questions
-        currQuestions = new ArrayList<>();
-        try {
-            File file = new File(path);
-            Scanner r = new Scanner(file);
-            currentTest = file.getName().substring(0, file.getName().length() - 4);
-            for (int i = 0; i < 4; i++) {
-                if (r.hasNextLine()) {
-                    r.nextLine();
-                }
-            }
-            while (r.hasNextLine()) {
-                // read each question
-                ArrayList<String> temp = new ArrayList<>();
-                temp.add(r.nextLine());
-                int numOfA = Integer.parseInt(r.nextLine());
-                for (int i = 0; i < numOfA; i++) {
-                    temp.add(r.nextLine());
-                }
-                currQuestions.add(temp);
-            }
-            r.close();
-        } catch (Exception e) {
-            System.out.println("An error occurred.");
-            e.printStackTrace();
+    /*
+     * Method name: deleteCurrent ; accepts: no parameters ; returns: void ;
+     *
+     * purpose: Delete whichever test is currently loaded.
+     */
+    private static void deleteCurrent() {
+        // connect to files
+        File test = new File("../Content/" + currentTest + ".txt");
+        File testResults = new File("../Content/" + currentTest + "_results.txt");
+
+        // delete test if exists
+        if (test.delete()) {
+            System.out.println("Deleted the test : " + currentTest);
+        } else {
+            System.out.println("Failed to delete the test : " + currentTest);
+        }
+        // delete results if exists
+        if (testResults.delete()) {
+            System.out.println("Deleted the test results : " + currentTest);
+        } else {
+            System.out.println("Failed to delete the test results : " + currentTest);
         }
     }
+
 }
