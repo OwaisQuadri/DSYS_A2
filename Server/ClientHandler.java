@@ -142,7 +142,7 @@ public class ClientHandler extends UnicastRemoteObject implements ClassInterface
         for (File file : listOfFiles) {
             String currFile = file.getName().substring(0, file.getName().length() - 4).split("_")[0];
             if (!currFile.equals(prevFile)) {
-                list += "\t"+currFile + "\n";
+                list += currFile + "\n";
             }
             prevFile = currFile;
         }
@@ -176,7 +176,13 @@ public class ClientHandler extends UnicastRemoteObject implements ClassInterface
                 result += "\nTest: " + currTest + "\n";
                 try {
                     File file = new File("../Content/" + currTest + "_results.txt");
+                    File file2 = new File("../Content/" + currTest + ".txt");
                     Scanner r = new Scanner(file);
+                    Scanner r2=new Scanner(file2);
+                    r2.nextLine();r2.nextLine();
+                    startDT=r2.nextLine();
+                    endDT=r2.nextLine();
+                    r2.close();
                     double sum = 0;
                     int count = 0;
                     double low = 2;
@@ -207,7 +213,9 @@ public class ClientHandler extends UnicastRemoteObject implements ClassInterface
                     } else {
                         double avg = sum / count;
                         result += student + "'s Score: "
-                                + (studentScore != -1 ? percent.format(studentScore) : "test not taken yet") + "\n\n";
+                                + (studentScore != -1 ? percent.format(studentScore) : "test not taken yet")+ "\n";
+                        result += "Available on: " + startDT+ "\n";
+                        result += "Due on: " + endDT + "\n\n";
                         result += "Average Class Score: " + percent.format(avg) + "\n";
                         result += "Highest Class Score: " + percent.format(high) + "\n";
                         result += "Lowest Class Score: " + percent.format(low) + "\n\n";
@@ -215,8 +223,17 @@ public class ClientHandler extends UnicastRemoteObject implements ClassInterface
                     }
                     r.close();
                 } catch (Exception e) {
-                    result += "There is no statistics for this test\n\n";
-                    e.printStackTrace();
+                    result += "There are no statistics for this test yet\n";
+                    try {
+                            //check when due
+                            File file2 = new File("../Content/" + currTest + ".txt");
+                            Scanner r2=new Scanner(file2);
+                            r2.nextLine();r2.nextLine();
+                            result += "Available on: "+r2.nextLine()+"\n\n";
+                            r2.close();
+                    } catch (Exception ex) {
+                        result+="\n";
+                    }
                 }
             }
         }
