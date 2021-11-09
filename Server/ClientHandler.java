@@ -1,6 +1,5 @@
 
 import java.io.*;
-import java.net.Socket;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.text.DecimalFormat;
@@ -83,7 +82,6 @@ public class ClientHandler extends UnicastRemoteObject implements ClassInterface
         try {
             File file = new File(path);
             Scanner r = new Scanner(file);
-            test = file.getName().substring(0, file.getName().length() - 4);
             // password
             pw = r.nextLine();
             // number of takes
