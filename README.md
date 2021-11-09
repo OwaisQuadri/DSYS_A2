@@ -18,7 +18,7 @@ or
 
 ```
 git clone https://github.com/UOITEngineering2/assignment2fall2020-OwaisQuadri/
-cd DSYS_A2
+cd assignment2fall2020-OwaisQuadri
 ```
 
 Instructions to Run:
