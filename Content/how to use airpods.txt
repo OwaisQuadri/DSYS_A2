@@ -1,0 +1,12 @@
+pro
+1
+2021-11-09 13:18
+2021-11-10 23:25
+when do you turn on noise cancellation?
+2
+!while grinding
+always
+when should you turn on transparency mode?
+2
+!always
+while grinding

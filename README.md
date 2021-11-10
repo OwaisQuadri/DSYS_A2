@@ -2,7 +2,7 @@
 
 Distributed Systems Assignment 2
 
-Continuation from Assignmnet 1 (which can be found <a href=https://github.com/OwaisQuadri/DSYS_A1>here</a>).
+This application is based on <a href="https://github.com/OwaisQuadri/DSYS_A1">Assignment 1</a> where the program was to be made using multithreading. In this assignment, Java RMI was used to connect the clients to the server’s functions to complete a certain task. My program is an academic testing system where a supervisor/teacher can hold multiple choice tests for a group of students. The same functions were implemented and some additional functionalities are also added for this assignment.
 
 Instructions to Download:
 
@@ -45,3 +45,5 @@ there are a few logins for students, please use one of the following pairs:
 - UN: "student" , PW: "student"
 - UN: "owais" , PW: "owais"
 - UN: "john" , PW: "john"
+- UN: "sanzir" , PW: "sanzir"
+- UN: "taha" , PW: "taha"

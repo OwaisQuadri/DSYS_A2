@@ -13,8 +13,8 @@ public class Student {
      * 
      */
     // init constants
-    final static String[] USERS = { "owais", "student", "john" };
-    final static String[] PASSWORDS = { "owais", "student", "john" };
+    final static String[] USERS = { "owais", "student", "john", "taha", "sanzir" };
+    final static String[] PASSWORDS = { "owais", "student", "john", "taha", "sanzir" };
     // create scanner
     static Scanner sc = new Scanner(System.in);
 
@@ -81,12 +81,12 @@ public class Student {
         System.out.println("3. Exit");
         System.out.println("please enter a number from the above selection");
         int input = 0;
-        //verify input
+        // verify input
         try {
             input = Integer.parseInt(sc.nextLine());
         } catch (Exception e) {
             System.out.println("Invalid entry : no integer detected, try again");
-            displayMenu();//loop until they get it right
+            displayMenu();// loop until they get it right
             input = 0;
         }
         return input;
@@ -104,7 +104,7 @@ public class Student {
      * test or vice versa.
      */
     private static void gotoMenu(ClassInterface ci, String username) throws RemoteException {
-        //based on the input from display
+        // based on the input from display
         switch (displayMenu()) {
         case 1:
             // take test
@@ -120,7 +120,7 @@ public class Student {
             // exit
             System.exit(0);
         default:
-            //another number?
+            // another number?
             System.out.println("Invalid entry : please enter a number from the above selection");
             gotoMenu(ci, username);
             break;
@@ -139,15 +139,15 @@ public class Student {
     private static void runTest(ClassInterface ci, String username) throws RemoteException {
         // ask student which test they want to take
         String testName, testPW;
-        //get list of available tests from server
+        // get list of available tests from server
         System.out.println("Which test would you like to take?\n" + ci.testList());
         System.out.print("Test Name: ");
-        testName = sc.nextLine();//accept input
+        testName = sc.nextLine();// accept input
         System.out.print("Test Password: ");
-        testPW = sc.nextLine();//accept test password
+        testPW = sc.nextLine();// accept test password
         // ask server to take a certain test
         int TestStatus = ci.takeTest(username, testName, testPW);
-        //server response printed to student
+        // server response printed to student
         switch (TestStatus) {
         case -3:
             // incorrect password
@@ -190,14 +190,14 @@ public class Student {
         boolean isTest = false;
         for (ArrayList<String> q : questions) {
             System.out.println(q.get(0));// display q's
-            for (int i = 1; i < q.size(); i++) {//display answers
+            for (int i = 1; i < q.size(); i++) {// display answers
                 String send = q.get(i);
-                if (send.charAt(0) == '!') {//remove ! from correct answers
+                if (send.charAt(0) == '!') {// remove ! from correct answers
                     send = send.substring(1);
                     isTest = true;
                 }
                 send = i + ". " + send;
-                System.out.println(send);//display question and answers after parsing and serializing
+                System.out.println(send);// display question and answers after parsing and serializing
             }
             if (!isTest) {// if no correct answers specified (!)
                 correct++;
@@ -217,7 +217,7 @@ public class Student {
         double c = (double) correct;
         double t = (double) total;
         double result = c / t;
-        DecimalFormat percent = new DecimalFormat("#0.00 %");//format output to user
+        DecimalFormat percent = new DecimalFormat("#0.00 %");// format output to user
         System.out.println("Your score was : " + percent.format(result) + "\n");
         return result;
 

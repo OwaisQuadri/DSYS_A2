@@ -2,3 +2,4 @@ owais 1.0
 owais 0.0
 student 0.5
 student 1.0
+owais 0.25

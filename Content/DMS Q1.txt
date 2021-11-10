@@ -1,7 +1,7 @@
 quiz1
-2
+5
 2021-11-7 20:30
-2021-11-7 20:55
+2021-11-10 20:55
 A _ is a general purpose software system that facilitates the process of defining, constructing, manmipulating and sharing databases among vairous users and applications.
 4
 Meta-Database System
